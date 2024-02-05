@@ -10,21 +10,13 @@ module Api
         form = build_event_form(event_params)
         return render json: form.errors, status: :unprocessable_entity unless form.valid?
 
-        create_event(form.attributes)
+        event = form.create
+        render json: event, status: :created
       rescue InvalidEventTypeError => e
         render json: { error: e.message }, status: :bad_request
       end
 
       private
-
-      def create_event(attributes)
-        event = Event.new(attributes)
-        if event.save
-          render json: event, status: :created
-        else
-          render json: event.errors, status: :unprocessable_entity
-        end
-      end
 
       def build_event_form(params)
         case params[:event_type]

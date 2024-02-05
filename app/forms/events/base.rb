@@ -17,5 +17,9 @@ module Events
         special_requests:
       }
     end
+
+    def create
+      Event.create!(attributes)
+    end
   end
 end
