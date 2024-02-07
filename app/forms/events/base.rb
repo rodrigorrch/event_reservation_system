@@ -19,7 +19,10 @@ module Events
     end
 
     def create
-      Event.create!(attributes)
+      return false unless valid?
+
+      event = Event.new(attributes)
+      event.save!
     end
   end
 end

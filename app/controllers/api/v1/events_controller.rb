@@ -3,30 +3,20 @@
 module Api
   module V1
     class EventsController < ApplicationController
-      class InvalidEventTypeError < StandardError; end
-      INVALID_EVENT_TYPE_MSG = 'Invalid event type'
-
       def create
-        form = build_event_form(event_params)
-        return render json: form.errors, status: :unprocessable_entity unless form.valid?
-
-        event = form.create
-        render json: event, status: :created
-      rescue InvalidEventTypeError => e
+        if event.create
+          render json: event, status: :created
+        else
+          render json: event.errors, status: :unprocessable_entity
+        end
+      rescue EventFactory::InvalidEventTypeError => e
         render json: { error: e.message }, status: :bad_request
       end
 
       private
 
-      def build_event_form(params)
-        case params[:event_type]
-        when Event.event_types[:birthday]
-          Events::Birthday.new(event_params)
-        when Event.event_types[:business]
-          Events::Business.new(event_params)
-        else
-          raise InvalidEventTypeError, INVALID_EVENT_TYPE_MSG
-        end
+      def event
+        @event ||= EventFactory.new(action: event_params[:event_type].to_sym, params: event_params)
       end
 
       def event_params
